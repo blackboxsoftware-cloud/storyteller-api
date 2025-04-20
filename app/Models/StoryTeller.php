@@ -9,6 +9,20 @@ class StoryTeller extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+    protected $fillable = [
+        'id',
+        'user_id',
+        'description',
+        'social_media',
+        'profile_image',
+        'location',
+        'availability',
+        'preferred_genres',
+    ];
+
     public function user() {
         return $this->belongsTo(User::class);
     }

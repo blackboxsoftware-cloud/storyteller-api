@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceCategory extends Model
+class ServiceListing extends Model
 {
     use HasFactory;
 
@@ -13,6 +13,6 @@ class ServiceCategory extends Model
     public $incrementing = false;
 
     public function service_provider(){
-        return $this->hasOne(ServiceProvider::class);
+        return $this->belongsTo(ServiceProvider::class);
     }
 }

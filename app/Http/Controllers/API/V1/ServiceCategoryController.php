@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 
 class ServiceCategoryController extends Controller
@@ -12,7 +13,12 @@ class ServiceCategoryController extends Controller
      */
     public function index()
     {
-        //
+        $storyTellers = ServiceCategory::get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $storyTellers
+        ]);
     }
 
     /**

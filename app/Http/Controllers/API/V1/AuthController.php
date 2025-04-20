@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Models\ServiceProvider;
+use App\Models\StoryTeller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,15 +24,40 @@ class AuthController extends Controller
                 'last_name' => 'nullable|string|max:50',
                 'email' => 'required|email|unique:users',
                 'password' => 'required|string|min:6|confirmed',
+                'userType' => 'nullable|string|in:service_provider,story_teller',
+                'service_category_id' => 'required_if:userType,service_provider|string'
             ]);
 
             $user = User::create([
                 'id' => Str::uuid(),
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
+                'first_name' => $validated['first_name'] ?? null,
+                'last_name' => $validated['last_name'] ?? null,
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
             ]);
+
+            if($validated['userType'] && $validated['userType'] == 'service_provider'){
+                ServiceProvider::create([
+                    'id' => Str::uuid(),
+                    'user_id' => $user->id,
+                    'service_category_id' => $validated['service_category_id']
+                ]);
+            }else if($validated['userType'] && $validated['userType'] == 'story_teller'){
+                StoryTeller::create([
+                    'id' => Str::uuid(),
+                    'user_id' => $user->id,
+                ]);
+            }
+
+            // // generate a signed verification URL
+            // $verificationUrl = URL::temporarySignedRoute(
+            //     'verification.verify',
+            //     now()->addMinutes(60),
+            //     ['id' => $user->id]
+            // );
+
+            // // send the email
+            // Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -70,7 +97,7 @@ class AuthController extends Controller
 
             // Conditionally load relationships
             if ($user->service_provider()->exists()) {
-                $user->load('service_provider');
+                $user->load('service_provider.category');
             }
 
             if ($user->story_teller()->exists()) {

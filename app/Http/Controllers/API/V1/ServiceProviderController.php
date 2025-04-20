@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\ServiceListing;
 use App\Models\ServiceProvider;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,19 @@ class ServiceProviderController extends Controller
         return response()->json([
             'success' => true,
             'data' => $providers
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function serviceListings(ServiceProvider $serviceProvider)
+    {
+        $serviceListings = $serviceProvider->listings;
+
+        return response()->json([
+            'success' => true,
+            'data' => $serviceListings
         ]);
     }
 
