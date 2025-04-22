@@ -41,6 +41,7 @@ class BlogPostController extends Controller
                 'tags' => 'nullable|array',
                 'featured_image' => 'nullable|string',
                 'body' => 'required|string',
+                'status' => 'nullable|string|in:draft,published,archived'
             ]);
 
             $images = [
