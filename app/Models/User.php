@@ -55,4 +55,8 @@ class User extends Authenticatable
     public function story_teller(){
         return $this->hasOne(StoryTeller::class);
     }
+
+    public function blog_posts(){
+        return $this->hasMany(User::class);
+    }
 }
