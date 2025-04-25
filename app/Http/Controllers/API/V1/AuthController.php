@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Mail\VerifyEmail;
 use App\Models\ServiceProvider;
 use App\Models\StoryTeller;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -104,6 +107,10 @@ class AuthController extends Controller
                 $user->load('story_teller');
             }
 
+            if ($user->admin()->exists()) {
+                $user->load('admin');
+            }
+
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -130,5 +137,22 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out']);
+    }
+
+    public function verifyEmail(Request $request, $id){
+        if (! $request->hasValidSignature()) {
+            abort(401, 'Invalid or expired verification link.');
+        }
+
+        $user = User::findOrFail($id);
+
+        if ($user->email_verified_at) {
+            return 'Email already verified.';
+        }
+
+        $user->email_verified_at = now();
+        $user->save();
+
+        return response()->json(['message' => 'Email verified successfully.']);
     }
 }

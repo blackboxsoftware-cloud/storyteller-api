@@ -59,7 +59,7 @@ class BlogPostController extends Controller
             $post->excerpt = $validated['excerpt'];
             $post->featured_image = $images[array_rand($images)];
             $post->tags = is_array($validated['tags']) ? json_encode($validated['tags']) : $validated['tags'];
-            $post->status = 'draft';
+            $post->status = $validated['status'];
             $post->category = $validated['category'];
             $post->save();
 

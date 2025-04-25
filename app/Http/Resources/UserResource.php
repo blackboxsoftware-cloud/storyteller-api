@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'updated_at'   => $this->updated_at,
             'service_provider' => $this->whenLoaded('service_provider'),
             'story_teller'      => $this->whenLoaded('story_teller'),
+            'admin'      => $this->whenLoaded('admin'),
         ];
     }
 }

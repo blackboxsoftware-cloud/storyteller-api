@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\V1\{
+    AdminController,
     AuthController,
     ServiceProviderController,
     StoryTellerController,
@@ -29,9 +30,12 @@ use App\Http\Controllers\API\V1\{
 */
 
 Route::prefix('v1')->group(function () {
-    // Auth routes
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::controller(AuthController::class)->group(function () {
+        Route::post('/register', 'register');
+        Route::post('/login', 'login');
+        Route::get('/email/verify/{id}', 'verifyEmail')->name('verification.verify');
+    });
+
     Route::get('/service-category', [ServiceCategoryController::class, 'index']);
 
     Route::controller(BlogPostController::class)->group(function () {
@@ -44,10 +48,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/service-listings/search', 'search');
     });
 
+
     // Protected routes
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/service-providers/{serviceProvider}/service-listings', [ServiceProviderController::class, 'serviceListings']);
+
+        Route::controller(AdminController::class)->prefix('admin')->group(function () {
+            Route::get('/', 'index');
+        });
 
         Route::apiResource('service-providers', ServiceProviderController::class);
         Route::apiResource('story-tellers', StoryTellerController::class);
