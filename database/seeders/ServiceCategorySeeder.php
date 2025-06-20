@@ -10,6 +10,8 @@ class ServiceCategorySeeder extends Seeder
 {
     public function run(): void
     {
+        ServiceCategory::truncate();
+
         $categories = [
             'Ghostwriting',
             'Story Development & Coaching',
@@ -32,16 +34,14 @@ class ServiceCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            if (!ServiceCategory::where('name', $category)->exists()) {
-                ServiceCategory::create([
-                    'id' => Str::uuid(),
-                    'name' => $category,
-                    'description' => fake()->sentence(),
-                    'image_url' => fake()->imageUrl(640, 480, 'business'),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+            ServiceCategory::create([
+                'id' => Str::uuid(),
+                'name' => $category,
+                'description' => fake()->sentence(),
+                'image_url' => fake()->imageUrl(640, 480, 'business'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
     }
 }
