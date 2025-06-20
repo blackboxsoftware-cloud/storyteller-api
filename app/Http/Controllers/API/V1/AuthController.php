@@ -52,15 +52,18 @@ class AuthController extends Controller
                 ]);
             }
 
-            // // generate a signed verification URL
-            // $verificationUrl = URL::temporarySignedRoute(
-            //     'verification.verify',
-            //     now()->addMinutes(60),
-            //     ['id' => $user->id]
-            // );
+            // generate a signed verification URL
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id]
+            );
 
-            // // send the email
-            // Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            try {
+                Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+            } catch (\Throwable $e) {
+                Log::error('Failed to send verification email', ['error' => $e->getMessage()]);
+            }
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -68,8 +71,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $token
             ]);
-        }
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
             Log::error('Registration error', ['error' => $e->getMessage()]);
             return response()->json([
                 'message' => 'Validation failed',

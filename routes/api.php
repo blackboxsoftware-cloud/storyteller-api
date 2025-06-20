@@ -48,6 +48,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/service-listings/search', 'search');
     });
 
+    Route::controller(UserController::class)->group(function () {
+        Route::get('/users/{id}', 'show');
+    });
+
+    Route::controller(ServiceProviderController::class)->group(function () {
+        Route::get('/service-providers', 'index');
+    });
+
 
     // Protected routes
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -58,11 +66,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/', 'index');
         });
 
-        Route::apiResource('service-providers', ServiceProviderController::class);
+        Route::apiResource('service-providers', ServiceProviderController::class)->except(['index']);
         Route::apiResource('story-tellers', StoryTellerController::class);
         Route::apiResource('service-listings', ServiceListingController::class)->except(['index']);
         Route::apiResource('service-category', ServiceCategoryController::class)->except(['index']);
-        Route::apiResource('users', UserController::class);
+        Route::apiResource('users', UserController::class)->except(['show']);
         Route::apiResource('forum-posts', ForumPostController::class);
         Route::apiResource('forum-posts.comments', ForumPostCommentController::class);
         Route::apiResource('forum-posts.likes', ForumPostLikeController::class);

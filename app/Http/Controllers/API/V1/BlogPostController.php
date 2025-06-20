@@ -57,7 +57,7 @@ class BlogPostController extends Controller
             $post->slug = Str::slug($validated['title']) . '-' . Str::random(5);
             $post->body = $validated['body'];
             $post->excerpt = $validated['excerpt'];
-            $post->featured_image = $images[array_rand($images)];
+            $post->featured_image = $validated['featured_image']; //$images[array_rand($images)];
             $post->tags = is_array($validated['tags']) ? json_encode($validated['tags']) : $validated['tags'];
             $post->status = $validated['status'];
             $post->category = $validated['category'];

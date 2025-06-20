@@ -33,7 +33,28 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try{
+            $user = User::findOrFail($id);
+
+            if ($user->service_provider()->exists()) {
+                $user->load('service_provider.category');
+            }
+
+            if ($user->story_teller()->exists()) {
+                $user->load('story_teller');
+            }
+
+            return response()->json([
+                'message' => 'User fetched Successfully',
+                'data' => new UserResource($user),
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Create Service Listing error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
