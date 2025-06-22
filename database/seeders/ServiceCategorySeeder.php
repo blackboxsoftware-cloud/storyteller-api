@@ -10,7 +10,8 @@ class ServiceCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        ServiceCategory::truncate();
+        // Delete all records except the one where name = "Aircraft Assembler"
+        ServiceCategory::where('name', '!=', 'Aircraft Assembler')->delete();
 
         $categories = [
             'Ghostwriting',
