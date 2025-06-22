@@ -18,9 +18,20 @@ class BlogPostController extends Controller
     public function index()
     {
         $perPage = request()->get('per_page', 10);
+        $status = request()->get('status');
 
-        $posts = BlogPost::where('status', 'published')
-                    ->paginate($perPage);
+        $query = BlogPost::query();
+
+        if ($status === 'all') {
+            $query->whereIn('status', ['published', 'draft']);
+        } elseif ($status) {
+            $query->where('status', $status);
+        } else {
+            // No status supplied, default to published
+            $query->where('status', 'published');
+        }
+
+        $posts = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -44,11 +55,11 @@ class BlogPostController extends Controller
                 'status' => 'nullable|string|in:draft,published,archived'
             ]);
 
-            $images = [
-                'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1447023029226-ef8f6b52e3ea?q=80&w=800&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
-            ];
+            // $images = [
+            //     'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop',
+            //     'https://images.unsplash.com/photo-1447023029226-ef8f6b52e3ea?q=80&w=800&auto=format&fit=crop',
+            //     'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
+            // ];
 
             $post = new BlogPost();
             $post->id = Str::uuid();
@@ -90,6 +101,32 @@ class BlogPostController extends Controller
         return response()->json([
             'message' => 'Blog Post Retrieved Successfully',
             'data' => new BlogPostResource($blog_post),
+        ]);
+    }
+
+    /**
+     * Change the status of a blog post.
+     */
+    public function changeStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:draft,published,archived'
+        ]);
+
+        $post = BlogPost::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'message' => 'Blog post not found'
+            ], 404);
+        }
+
+        $post->status = $request->status;
+        $post->save();
+
+        return response()->json([
+            'message' => 'Blog post status updated successfully',
+            'data' => $post
         ]);
     }
 

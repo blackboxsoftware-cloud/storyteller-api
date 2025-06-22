@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
 use App\Models\ServiceProvider;
 use App\Models\StoryTeller;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -16,7 +17,7 @@ class AdminController extends Controller
     public function index()
     {
         $storyTellerCount = StoryTeller::count();
-        $serviceProviderCount = ServiceProvider::count();
+        $serviceProviderCount = User::whereHas('service_provider')->count();
         $blogPostCount = BlogPost::count();
 
         return response()->json([
@@ -59,5 +60,31 @@ class AdminController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Update the verified status of a service provider.
+     */
+    public function updateProviderStatus(Request $request, $id)
+    {
+        $request->validate([
+            'verified' => 'required|boolean',
+        ]);
+
+        $serviceProvider = ServiceProvider::find($id);
+
+        if (!$serviceProvider) {
+            return response()->json([
+                'message' => 'Service provider not found'
+            ], 404);
+        }
+
+        $serviceProvider->verified = $request->verified;
+        $serviceProvider->save();
+
+        return response()->json([
+            'message' => 'Service provider verified status updated successfully',
+            'data' => $serviceProvider
+        ]);
     }
 }

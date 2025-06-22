@@ -20,7 +20,10 @@ class ServiceListingController extends Controller
         $perPage = request()->get('per_page', 10);
 
         $serviceListings = ServiceListing::with(['service_provider.user'])
-                    ->paginate($perPage);
+            ->whereHas('service_provider', function ($providerQuery) {
+                $providerQuery->where('verified', true);
+            })
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -75,15 +78,18 @@ class ServiceListingController extends Controller
         $perPage = $request->get('per_page', 10);
 
         $serviceListings = ServiceListing::with(['service_provider.user'])
+            ->whereHas('service_provider', function ($providerQuery) {
+                $providerQuery->where('verified', true);
+            })
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
                 ->orWhereHas('service_provider', function ($providerQuery) use ($query) {
                     $providerQuery->whereJsonContains('preferred_genres', $query)
-                                    ->orWhereHas('user', function ($userQuery) use ($query) {
-                                        $userQuery->where('first_name', 'like', "%{$query}%")
-                                                ->orWhere('last_name', 'like', "%{$query}%")
-                                                ->orWhere('email', 'like', "%{$query}%");
-                                    });
+                        ->orWhereHas('user', function ($userQuery) use ($query) {
+                            $userQuery->where('first_name', 'like', "%{$query}%")
+                                ->orWhere('last_name', 'like', "%{$query}%")
+                                ->orWhere('email', 'like', "%{$query}%");
+                        });
                 });
             })
             ->paginate($perPage);

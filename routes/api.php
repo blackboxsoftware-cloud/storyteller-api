@@ -60,10 +60,18 @@ Route::prefix('v1')->group(function () {
     // Protected routes
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/service-providers/{serviceProvider}/service-listings', [ServiceProviderController::class, 'serviceListings']);
 
         Route::controller(AdminController::class)->prefix('admin')->group(function () {
             Route::get('/', 'index');
+            Route::post('/service-providers/{id}/update-status', 'updateProviderStatus');
+        });
+
+        Route::controller(BlogPostController::class)->group(function () {
+            Route::post('/blog-posts/{id}/change-status', 'changeStatus');
+        });
+
+        Route::controller(ServiceProviderController::class)->group(function () {
+            Route::get('/service-providers/{serviceProvider}/service-listings', 'serviceListings');
         });
 
         Route::apiResource('service-providers', ServiceProviderController::class)->except(['index']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\V1;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceListing;
 use App\Models\ServiceProvider;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ServiceProviderController extends Controller
@@ -16,12 +17,13 @@ class ServiceProviderController extends Controller
     {
         $perPage = request()->get('per_page', 10);
 
-        $providers = ServiceProvider::with(['user', 'category'])
-                    ->paginate($perPage);
+        $users = User::whereHas('service_provider')
+            ->with(['service_provider.category'])
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data' => $providers
+            'data' => $users
         ]);
     }
 
