@@ -96,8 +96,17 @@ class BlogPostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(BlogPost $blog_post)
+    public function show($slug)
     {
+        $blog_post = BlogPost::where('slug', $slug)->first();
+
+        if (!$blog_post) {
+            return response()->json([
+                'message' => 'Blog Post not found',
+                'data' => null,
+            ], 404);
+        }
+
         return response()->json([
             'message' => 'Blog Post Retrieved Successfully',
             'data' => new BlogPostResource($blog_post),

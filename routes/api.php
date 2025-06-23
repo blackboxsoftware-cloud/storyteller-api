@@ -40,7 +40,7 @@ Route::prefix('v1')->group(function () {
 
     Route::controller(BlogPostController::class)->group(function () {
         Route::get('/blog-posts', 'index');
-        Route::get('/blog-posts/{blog_post}', 'show');
+        Route::get('/blog-posts/{slug}', 'show');
     });
 
     Route::controller(ServiceListingController::class)->group(function () {
