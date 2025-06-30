@@ -69,6 +69,17 @@ class ServiceProviderController extends Controller
      */
     public function destroy(ServiceProvider $serviceProvider)
     {
-        //
+        // Delete the associated user
+        $user = $serviceProvider->user;
+        if ($user) {
+            $user->delete();
+        }
+
+        // Delete the service provider record
+        $serviceProvider->delete();
+
+        return response()->json([
+            'message' => 'Service Provider and associated user deleted successfully'
+        ]);
     }
 }

@@ -16,7 +16,7 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $storyTellerCount = StoryTeller::count();
+        $storyTellerCount = User::whereHas('story_teller')->count();
         $serviceProviderCount = User::whereHas('service_provider')->count();
         $blogPostCount = BlogPost::count();
 
