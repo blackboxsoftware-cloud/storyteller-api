@@ -148,7 +148,7 @@ class AuthController extends Controller
 
         $user = User::findOrFail($id);
 
-        $loginUrl = rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/') . '/login';
+        $loginUrl = rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/') . '/signin';
 
         if ($user->email_verified_at) {
             return response(
