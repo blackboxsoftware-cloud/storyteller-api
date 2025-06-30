@@ -148,13 +148,25 @@ class AuthController extends Controller
 
         $user = User::findOrFail($id);
 
+        $loginUrl = rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/') . '/login';
+
         if ($user->email_verified_at) {
-            return 'Email already verified.';
+            return response(
+                '<div style="text-align:center;margin-top:40px;font-family:Arial,sans-serif;">
+                    <h2 style="color:green;">Email already verified.</h2>
+                    <a href="' . $loginUrl . '" style="display:inline-block;margin-top:24px;padding:12px 28px;background:#f9c406;color:#222;text-decoration:none;border-radius:6px;font-weight:bold;">Return to login</a>
+                </div>'
+            );
         }
 
         $user->email_verified_at = now();
         $user->save();
 
-        return response()->json(['message' => 'Email verified successfully.']);
+        return response(
+            '<div style="text-align:center;margin-top:40px;font-family:Arial,sans-serif;">
+                <h2 style="color:green;">Email verified successfully.</h2>
+                <a href="' . $loginUrl . '" style="display:inline-block;margin-top:24px;padding:12px 28px;background:#f9c406;color:#222;text-decoration:none;border-radius:6px;font-weight:bold;">Return to login</a>
+            </div>'
+        );
     }
 }
