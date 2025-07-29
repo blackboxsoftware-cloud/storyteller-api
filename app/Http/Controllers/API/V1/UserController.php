@@ -80,13 +80,26 @@ class UserController extends Controller
             $user->last_name = $validated['last_name'] ?? $user->last_name;
             $user->save();
 
-            if($profile){
-                $profile->description = $validated['description'] ?? '';
-                $profile->website = $validated['website'] ?? '';
-                $profile->location = $validated['location'] ?? '';
-                $profile->availability = $validated['availability'] ?? '';
+            if ($profile) {
+                if (array_key_exists('description', $validated)) {
+                    $profile->description = $validated['description'];
+                }
+
+                if (array_key_exists('website', $validated)) {
+                    $profile->website = $validated['website'];
+                }
+
+                if (array_key_exists('location', $validated)) {
+                    $profile->location = $validated['location'];
+                }
+
+                if (array_key_exists('availability', $validated)) {
+                    $profile->availability = $validated['availability'];
+                }
+
                 $profile->save();
             }
+
 
             if ($user->service_provider()->exists()) {
                 $user->load('service_provider.category');

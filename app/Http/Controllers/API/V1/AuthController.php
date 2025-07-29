@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Mail\ResetPassword;
 use App\Mail\VerifyEmail;
 use App\Models\ServiceProvider;
 use App\Models\StoryTeller;
@@ -168,5 +169,54 @@ class AuthController extends Controller
                 <a href="' . $loginUrl . '" style="display:inline-block;margin-top:24px;padding:12px 28px;background:#f9c406;color:#222;text-decoration:none;border-radius:6px;font-weight:bold;">Return to login</a>
             </div>'
         );
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        // Generate a signed URL valid for 60 minutes
+        $url = URL::temporarySignedRoute(
+            'password.reset', now()->addMinutes(60), ['id' => $user->id]
+        );
+
+        $resetUrl = rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/') . '/reset-password/' . $user->id . '?url=' . urlencode($url);
+
+        try {
+            Mail::to($user->email)->send(new ResetPassword($user, $resetUrl));
+        } catch (\Throwable $e) {
+            Log::error('Failed to send password reset email', ['error' => $e->getMessage()]);
+        }
+
+        return response()->json(['message' => 'Password reset link sent to your email.']);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'password' => 'required|min:6|confirmed',
+            'url' => 'required',
+        ]);
+
+        $tempRequest = Request::create($request->url, 'GET');
+
+        if (! URL::hasValidSignature($tempRequest)) {
+            return response()->json(['message' => 'Invalid or expired reset link.'], 403);
+        }
+
+        $user = User::find($request->id);
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password reset successfully.']);
     }
 }

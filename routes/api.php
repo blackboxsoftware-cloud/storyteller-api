@@ -34,6 +34,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/register', 'register');
         Route::post('/login', 'login');
         Route::get('/email/verify/{id}', 'verifyEmail')->name('verification.verify');
+
+        // Reset password routes
+        Route::post('/forgot-password', 'forgotPassword');
+        Route::post('/password/reset', 'resetPassword')->name('password.reset');
     });
 
     Route::get('/service-category', [ServiceCategoryController::class, 'index']);
