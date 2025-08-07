@@ -78,6 +78,11 @@ Route::prefix('v1')->group(function () {
             Route::get('/service-providers/{serviceProvider}/service-listings', 'serviceListings');
         });
 
+        Route::controller(ServiceListingController::class)->group(function () {
+            Route::post('/service-listings/{serviceListing}/approve', 'approve');
+            Route::post('/service-listings/{serviceListing}/reject', 'reject');
+        });
+
         Route::apiResource('service-providers', ServiceProviderController::class)->except(['index']);
         Route::apiResource('story-tellers', StoryTellerController::class);
         Route::apiResource('service-listings', ServiceListingController::class)->except(['index']);

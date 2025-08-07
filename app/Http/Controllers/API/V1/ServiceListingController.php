@@ -18,18 +18,25 @@ class ServiceListingController extends Controller
     public function index()
     {
         $perPage = request()->get('per_page', 10);
+        $status = request()->get('status');
 
-        $serviceListings = ServiceListing::with(['service_provider.user'])
+        $serviceListingsQuery = ServiceListing::with(['service_provider.user'])
             ->whereHas('service_provider', function ($providerQuery) {
                 $providerQuery->where('verified', true);
-            })
-            ->paginate($perPage);
+            });
+
+        if ($status == 'approved') {
+            $serviceListingsQuery->where('approved', true);
+        }
+
+        $serviceListings = $serviceListingsQuery->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'data' => $serviceListings
         ]);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -97,6 +104,47 @@ class ServiceListingController extends Controller
         return response()->json([
             'success' => true,
             'data' => $serviceListings
+        ]);
+    }
+
+
+   public function approve(ServiceListing $serviceListing)
+    {
+        $user = auth()->user();
+
+        if (!$user->admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized Action!'
+            ], 403);
+        }
+
+        $serviceListing->approved = true;
+        $serviceListing->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => $serviceListing
+        ]);
+    }
+
+    public function reject(ServiceListing $serviceListing)
+    {
+        $user = auth()->user();
+
+        if (!$user->admin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized Action!'
+            ], 403);
+        }
+
+        $serviceListing->approved = false;
+        $serviceListing->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => $serviceListing
         ]);
     }
 
