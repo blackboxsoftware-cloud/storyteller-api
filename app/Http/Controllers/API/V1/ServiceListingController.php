@@ -191,6 +191,7 @@ class ServiceListingController extends Controller
             $serviceListing->description = $validated['description'] ?? $serviceListing->description;
             $serviceListing->price = $validated['price'] ?? $serviceListing->price;
             $serviceListing->image = $validated['image'] ?? $serviceListing->image;
+            $serviceListing->approved = false;
             $serviceListing->comment = '';
             $serviceListing->save();
 
