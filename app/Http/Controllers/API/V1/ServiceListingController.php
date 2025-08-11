@@ -29,7 +29,7 @@ class ServiceListingController extends Controller
             $serviceListingsQuery->where('approved', true);
         }
 
-        $serviceListings = $serviceListingsQuery->paginate($perPage);
+        $serviceListings = $serviceListingsQuery->orderBy('updated_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -120,6 +120,7 @@ class ServiceListingController extends Controller
         }
 
         $serviceListing->approved = true;
+        $serviceListing->comment = "";
         $serviceListing->save();
 
         return response()->json([
@@ -128,7 +129,7 @@ class ServiceListingController extends Controller
         ]);
     }
 
-    public function reject(ServiceListing $serviceListing)
+    public function reject(Request $request, ServiceListing $serviceListing)
     {
         $user = auth()->user();
 
@@ -139,7 +140,12 @@ class ServiceListingController extends Controller
             ], 403);
         }
 
+        $request->validate([
+            'comment' => 'required|string|max:255',
+        ]);
+
         $serviceListing->approved = false;
+        $serviceListing->comment = $request->input('comment');
         $serviceListing->save();
 
         return response()->json([
@@ -162,8 +168,51 @@ class ServiceListingController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string',
+                'description' => 'nullable|string',
+                'price' => 'nullable|numeric',
+                'image' => 'nullable|url',
+            ]);
+
+            $serviceListing = ServiceListing::findOrFail($id);
+
+            // Optional: Ensure only owner or admin can update
+            $user = auth()->user();
+            if (!$user->admin && $serviceListing->service_provider->user_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized Action!'
+                ], 403);
+            }
+
+            $serviceListing->title = $validated['title'];
+            $serviceListing->description = $validated['description'] ?? $serviceListing->description;
+            $serviceListing->price = $validated['price'] ?? $serviceListing->price;
+            $serviceListing->image = $validated['image'] ?? $serviceListing->image;
+            $serviceListing->comment = '';
+            $serviceListing->save();
+
+            return response()->json([
+                'message' => 'Service Listing Updated Successfully',
+                'data' => $serviceListing,
+            ], 200);
+        } catch (ValidationException $e) {
+            Log::error('Update Service Listing validation error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('Update Service Listing error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
