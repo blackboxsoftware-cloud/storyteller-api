@@ -46,7 +46,7 @@ class ServiceListingController extends Controller
         try{
             $validated = $request->validate([
                 'title' => 'required|string',
-                'description' => 'nullable|string',
+                'description' => 'required|string|min:300',
                 'price' => 'nullable|numeric',
                 'service_provider_id' => 'required|string'
             ]);
@@ -171,7 +171,7 @@ class ServiceListingController extends Controller
         try {
             $validated = $request->validate([
                 'title' => 'required|string',
-                'description' => 'nullable|string',
+                'description' => 'required|string|min:300',
                 'price' => 'nullable|numeric',
                 'image' => 'nullable|url',
             ]);
