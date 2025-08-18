@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
+use App\Models\ServiceListing;
 use App\Models\ServiceProvider;
 use App\Models\StoryTeller;
 use App\Models\User;
@@ -19,13 +20,17 @@ class AdminController extends Controller
         $storyTellerCount = User::whereHas('story_teller')->count();
         $serviceProviderCount = User::whereHas('service_provider')->count();
         $blogPostCount = BlogPost::count();
+        $serviceListingApprovedCount = ServiceListing::where('approved', true)->count();
+        $serviceListingCount = ServiceListing::count();
 
         return response()->json([
             'message' => true,
             'data' => [
                     'storyTellerCount' => $storyTellerCount,
                     'serviceProviderCount' => $serviceProviderCount,
-                    'blogPostCount' => $blogPostCount
+                    'blogPostCount' => $blogPostCount,
+                    'serviceListingApprovedCount' => $serviceListingApprovedCount,
+                    'serviceListingCount' => $serviceListingCount
                 ]
             ]);
     }

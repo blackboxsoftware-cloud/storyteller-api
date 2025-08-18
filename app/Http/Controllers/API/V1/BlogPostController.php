@@ -72,6 +72,7 @@ class BlogPostController extends Controller
             $post->tags = is_array($validated['tags']) ? json_encode($validated['tags']) : $validated['tags'];
             $post->status = $validated['status'];
             $post->category = $validated['category'];
+            $post->published_at = $validated['status'] === 'published' ? now() : null ;
             $post->save();
 
             return response()->json([
@@ -131,6 +132,7 @@ class BlogPostController extends Controller
         }
 
         $post->status = $request->status;
+        $post->published_at = $request->status === 'published' ? now() : null;
         $post->save();
 
         return response()->json([
@@ -144,7 +146,52 @@ class BlogPostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string',
+                'excerpt' => 'required|string|max:500',
+                'category' => 'nullable|string',
+                'tags' => 'nullable|array',
+                'featured_image' => 'nullable|string',
+                'body' => 'required|string',
+                'status' => 'nullable|string|in:draft,published,archived'
+            ]);
+
+            // $images = [
+            //     'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop',
+            //     'https://images.unsplash.com/photo-1447023029226-ef8f6b52e3ea?q=80&w=800&auto=format&fit=crop',
+            //     'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop',
+            // ];
+
+            $post = BlogPost::findOrFail($id);
+
+            $post->title = $validated['title'];
+            $post->slug = Str::slug($validated['title']) . '-' . Str::random(5);
+            $post->body = $validated['body'];
+            $post->excerpt = $validated['excerpt'];
+            $post->featured_image = $validated['featured_image']; //$images[array_rand($images)];
+            $post->tags = is_array($validated['tags']) ? json_encode($validated['tags']) : $validated['tags'];
+            $post->status = $validated['status'];
+            $post->category = $validated['category'];
+            $post->save();
+
+            return response()->json([
+                'message' => 'Blog Post Updated Successfully',
+                'data' => $post,
+            ], 200);
+        }catch (ValidationException $e) {
+            Log::error('Blog Post Update error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('Blog Post Update error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -152,6 +199,11 @@ class BlogPostController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $post = BlogPost::findOrFail($id);
+        $post->delete();
+
+        return response()->json([
+            'message' => 'Blog Post Deleted Successfully',
+        ], 200);
     }
 }
