@@ -31,7 +31,7 @@ class BlogPostController extends Controller
             $query->where('status', 'published');
         }
 
-        $posts = $query->paginate($perPage);
+        $posts = $query->latest()->paginate($perPage);
 
         return response()->json([
             'success' => true,
